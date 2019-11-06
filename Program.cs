@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 
 namespace RingBuffer
 {
@@ -12,55 +14,43 @@ namespace RingBuffer
     {
         static void Main(string[] args)
         {
-            RingBuffer<PlayerSnapshot> ringBuffer = new RingBuffer<PlayerSnapshot>(3, true);
-            ringBuffer.Enqueue(new PlayerSnapshot
+            RingBuffer<PlayerSnapshot> ringBuffer = new RingBuffer<PlayerSnapshot>(20, true);
+            Queue<PlayerSnapshot> queue = new Queue<PlayerSnapshot>();
+
+            Stopwatch sw = new Stopwatch();
+            sw.Start();
+
+            for (int i = 0; i <= 1000; i++)
             {
-                Id = 1,
-                Name = "Lukas",
-            });
+                ringBuffer.Enqueue(new PlayerSnapshot
+                {
+                    Id = i,
+                    Name = "Lukas_" + i,
+                });
+            }
 
-            ringBuffer.Enqueue(new PlayerSnapshot
+            sw.Stop();
+            Console.WriteLine("RingBuffer={0} ns", sw.Elapsed.TotalMilliseconds * 1000000);
+            sw.Reset();
+            sw.Start();
+
+            for (int i = 0; i <= 100; i++)
             {
-                Id = 2,
-                Name = "Alexander",
-            });
-            ringBuffer.Enqueue(new PlayerSnapshot
-            {
-                Id = 3,
-                Name = "Johann",
-            });
+                queue.Enqueue(new PlayerSnapshot
+                {
+                    Id = i,
+                    Name = "Lukas_" + i,
+                });
+            }
 
-            // ringBuffer.Dequeue();
-            // ringBuffer.Dequeue();
+            sw.Stop();
+            Console.WriteLine("Queue={0} ns", sw.Elapsed.TotalMilliseconds * 1000000);
 
-            ringBuffer.Enqueue(new PlayerSnapshot
-            {
-                Id = 4,
-                Name = "Paul",
-            });
-
-            ringBuffer.Enqueue(new PlayerSnapshot
-            {
-                Id = 5,
-                Name = "Karlo",
-            });
-
-            //ringBuffer.Dequeue();
-
-            Console.WriteLine("Capacity: " + ringBuffer.Capacity);
-            Console.WriteLine("Count: " + ringBuffer.Count);
-            Console.WriteLine("IsFull: " + ringBuffer.IsFull);
-            Console.WriteLine("IsEmpty: " + ringBuffer.IsEmpty);
-
+            Console.WriteLine($"Capacity: {ringBuffer.Capacity} Count: {ringBuffer.Count} IsFull: {ringBuffer.IsFull} IsEmpty: {ringBuffer.IsEmpty}");
             foreach (PlayerSnapshot snapshot in ringBuffer)
             {
                 Console.WriteLine($"Id: {snapshot.Id} Name: {snapshot.Name}");
             }
-
-            Console.WriteLine("Capacity: " + ringBuffer.Capacity);
-            Console.WriteLine("Count: " + ringBuffer.Count);
-            Console.WriteLine("IsFull: " + ringBuffer.IsFull);
-            Console.WriteLine("IsEmpty: " + ringBuffer.IsEmpty);
         }
     }
 }
