@@ -7,7 +7,9 @@ namespace RingBuffer
 {
     public class RingBuffer<T> : IEnumerable<T>, IEnumerable
     {
-        public RingBuffer(int _capacity)
+        private bool allowOverride;
+
+        public RingBuffer(int _capacity, bool _allowOverride = false)
         {
             if (_capacity > 0)
             {
@@ -16,6 +18,7 @@ namespace RingBuffer
                 head = -1;
                 tail = head;
                 Count = 0;
+                allowOverride = _allowOverride;
             }
             else throw new ArgumentException("Must be greater than zero!", "_capacity");
         }
@@ -60,7 +63,10 @@ namespace RingBuffer
                 if (Count < Capacity) Count++;
             } else
             {
-                throw new ArgumentException("Buffer is full!");
+                if (!allowOverride) throw new ArgumentException("Buffer is full!");
+                tail = (tail + 1) % Capacity;
+                head = (head + 1) % Capacity;
+                buffer[tail] = _item;
             }
         }
 

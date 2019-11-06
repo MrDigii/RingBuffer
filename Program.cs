@@ -12,7 +12,7 @@ namespace RingBuffer
     {
         static void Main(string[] args)
         {
-            RingBuffer<PlayerSnapshot> ringBuffer = new RingBuffer<PlayerSnapshot>(3);
+            RingBuffer<PlayerSnapshot> ringBuffer = new RingBuffer<PlayerSnapshot>(3, true);
             ringBuffer.Enqueue(new PlayerSnapshot
             {
                 Id = 1,
@@ -30,8 +30,8 @@ namespace RingBuffer
                 Name = "Johann",
             });
 
-            ringBuffer.Dequeue();
-            ringBuffer.Dequeue();
+            // ringBuffer.Dequeue();
+            // ringBuffer.Dequeue();
 
             ringBuffer.Enqueue(new PlayerSnapshot
             {
@@ -39,6 +39,13 @@ namespace RingBuffer
                 Name = "Paul",
             });
 
+            ringBuffer.Enqueue(new PlayerSnapshot
+            {
+                Id = 5,
+                Name = "Karlo",
+            });
+
+            //ringBuffer.Dequeue();
 
             Console.WriteLine("Capacity: " + ringBuffer.Capacity);
             Console.WriteLine("Count: " + ringBuffer.Count);
