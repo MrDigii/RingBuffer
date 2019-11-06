@@ -7,6 +7,7 @@ Its working like a queue where items can be enqueued and dequeued from a array w
 Processing of 1000 items with a normal CSharp .NET Queue and a Ring Buffer with different max sizes:
 
 Assign:
+
 | Ring Buffer size:        | Duration with 1000 items:       |
 | ------------- |:------------------------------------------:|
 | 50			| 0,9196 ms								     |
