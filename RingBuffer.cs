@@ -7,45 +7,22 @@ namespace RingBuffer
 {
     public class RingBuffer<T> : IEnumerable<T>, IEnumerable
     {
-        private bool allowOverride;
 
-        public RingBuffer(int _capacity, bool _allowOverride = false)
+        public RingBuffer(int _capacity)
         {
-            if (_capacity > 0)
-            {
-                Capacity = _capacity;
-                buffer = new T[_capacity];
-                head = -1;
-                tail = head;
-                Count = 0;
-                allowOverride = _allowOverride;
-            }
-            else throw new ArgumentException("Must be greater than zero!", "_capacity");
+            if (_capacity <= 0) throw new ArgumentException("Invalid capacity!", "_capacity");
+            Capacity = _capacity;
+            buffer = new T[_capacity];
+            tail = 0;
+            Count = 0;
         }
 
         #region Properties
         public int Capacity { get; private set; }
         public int Count { get; private set; }
-
-        public bool IsFull
-        {
-            get
-            {
-                return head == (tail + 1) % Capacity;
-            }
-        }
-
-        public bool IsEmpty
-        {
-            get
-            {
-                return head == -1 && tail == -1;
-            }
-        }
         #endregion
 
         private T[] buffer;
-        private int head;
         private int tail;
 
         #region Methods
@@ -53,40 +30,29 @@ namespace RingBuffer
         {
             // avoid arithmetic overflow
             if (tail == int.MaxValue)
-                tail %= Capacity;
+                tail = 0;
 
-            if (!IsFull)
-            {
-                if (IsEmpty) head = 0;
-                tail = (tail + 1) % Capacity;
-                buffer[tail] = _item;
-                if (Count < Capacity) Count++;
-            } else
-            {
-                if (!allowOverride) throw new ArgumentException("Buffer is full!");
-                tail = (tail + 1) % Capacity;
-                head = (head + 1) % Capacity;
-                buffer[tail] = _item;
-            }
+            // set new item
+            buffer[tail % Capacity] = _item;
+
+            // increment tail
+            tail = (tail + 1) % Capacity;
+            if (Count < Capacity) Count++;
         }
 
         public T Dequeue()
         {
-            T item;
-            if (!IsEmpty)
-            {
-                item = buffer[head];
-                if (head == tail) Clear();
-                else
-                {
-                    head = (head + 1) % Capacity;
-                    if (Count > 0) Count--;
-                }
-            } else
-            {
-                throw new ArgumentException("Buffer is empty!");
-            }
-            return item;
+            if (Count == 0) throw new ArgumentException("Buffer is empty!");
+
+            // get head of buffer
+            int head = (tail - (Count - 1)) % Capacity;
+            if (head < 0) head += Capacity;
+
+            // decrement count to length without deleted item
+            if (Count > 0) Count--;
+
+            // get removed item
+            return buffer[head];
         }
 
         public T this[int _index]
@@ -95,7 +61,7 @@ namespace RingBuffer
             {
                 if (_index < 0 || _index >= Count) throw new IndexOutOfRangeException();
                 // get relative index
-                int relativeIndex = (tail - Count + _index + 1) % Capacity; // attention % != Mod see: https://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
+                int relativeIndex = (tail - Count + _index) % Capacity; // attention % != Mod see: https://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
                 if (relativeIndex < 0) relativeIndex = relativeIndex + Capacity;
                 return buffer[relativeIndex];
             }
@@ -103,8 +69,9 @@ namespace RingBuffer
 
         public void Clear()
         {
-            tail = -1;
-            head = tail;
+            for (int i = 0; i < Count; i++)
+                buffer[i] = default;
+            tail = 0;
             Count = 0;
         }
 

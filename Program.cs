@@ -14,43 +14,48 @@ namespace RingBuffer
     {
         static void Main(string[] args)
         {
-            RingBuffer<PlayerSnapshot> ringBuffer = new RingBuffer<PlayerSnapshot>(20, true);
-            Queue<PlayerSnapshot> queue = new Queue<PlayerSnapshot>();
+            int itemSize = 2000;
+            int bufferCapacity = 128;
+            RingBuffer<int> ringBuffer = new RingBuffer<int>(bufferCapacity);
+            CircularBuffer<int> circularBuffer = new CircularBuffer<int>(bufferCapacity);
 
             Stopwatch sw = new Stopwatch();
+
             sw.Start();
-
-            for (int i = 0; i <= 1000; i++)
+            for (int i = 0; i < itemSize; i++)
             {
-                ringBuffer.Enqueue(new PlayerSnapshot
-                {
-                    Id = i,
-                    Name = "Lukas_" + i,
-                });
+                circularBuffer.Add(i);
             }
-
+            for (int i = 0; i < bufferCapacity; i++)
+            {
+                circularBuffer.Read();
+            }
             sw.Stop();
-            Console.WriteLine("RingBuffer={0} ns", sw.Elapsed.TotalMilliseconds * 1000000);
-            sw.Reset();
-            sw.Start();
 
-            for (int i = 0; i <= 100; i++)
+            TimeSpan elapsedTime3 = sw.Elapsed;
+            Console.WriteLine("RingBuffer Queue={0} ns", elapsedTime3.TotalMilliseconds * 1000000);
+
+            sw.Restart();
+            for (int i = 0; i < itemSize; i++)
             {
-                queue.Enqueue(new PlayerSnapshot
-                {
-                    Id = i,
-                    Name = "Lukas_" + i,
-                });
+                ringBuffer.Enqueue(i);
             }
 
+            for (int i = 0; i < bufferCapacity; i++)
+            {
+                ringBuffer.Dequeue();
+            }
             sw.Stop();
-            Console.WriteLine("Queue={0} ns", sw.Elapsed.TotalMilliseconds * 1000000);
 
-            Console.WriteLine($"Capacity: {ringBuffer.Capacity} Count: {ringBuffer.Count} IsFull: {ringBuffer.IsFull} IsEmpty: {ringBuffer.IsEmpty}");
-            foreach (PlayerSnapshot snapshot in ringBuffer)
+            TimeSpan elapsedTime2 = sw.Elapsed;
+            Console.WriteLine("RingBuffer={0} ns", elapsedTime2.TotalMilliseconds * 1000000);
+
+            Console.WriteLine($"Capacity: {ringBuffer.Capacity} Count: {ringBuffer.Count} IsFull: {ringBuffer.Count == ringBuffer.Capacity} IsEmpty: {ringBuffer.Count == 0}");            
+            foreach (int snapshot in ringBuffer)
             {
-                Console.WriteLine($"Id: {snapshot.Id} Name: {snapshot.Name}");
+                Console.WriteLine($"Id: {snapshot}");
             }
+            
         }
     }
 }
