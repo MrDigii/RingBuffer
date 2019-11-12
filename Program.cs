@@ -20,7 +20,7 @@ namespace RingBuffer
 
             Queue<int> queue = new Queue<int>(bufferCapacity);
             RingBuffer<int> ringBuffer = new RingBuffer<int>(bufferCapacity);
-            CircularBuffer<int> circularBuffer = new CircularBuffer<int>(bufferCapacity);
+            CircularQueue<int> circularQueue = new CircularQueue<int>(bufferCapacity);
 
             Benchmark.Time("C# Queue", () =>
             {
@@ -43,11 +43,11 @@ namespace RingBuffer
                 {
                     for (int i = 0; i < itemSize; i++)
                     {
-                        circularBuffer.Add(i);
+                        circularQueue.Enqueue(i);
                     }
                     for (int i = 0; i < bufferCapacity; i++)
                     {
-                        circularBuffer.Read();
+                        circularQueue.Dequeue();
                     }
                 }
             });

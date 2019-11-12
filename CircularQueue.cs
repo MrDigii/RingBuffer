@@ -4,7 +4,7 @@ using System.Text;
 
 namespace RingBuffer
 {
-    public class CircularBuffer<T>
+    public class CircularQueue<T>
     {
         private Queue<T> buffer;
 
@@ -16,13 +16,13 @@ namespace RingBuffer
             } 
         }
 
-        public CircularBuffer(int _capacity)
+        public CircularQueue(int _capacity)
         {
             buffer = new Queue<T>(_capacity);
             Capacity = _capacity;
         }
 
-        public void Add(T obj)
+        public void Enqueue(T obj)
         {
             if (buffer.Count == Capacity)
             {
@@ -32,7 +32,7 @@ namespace RingBuffer
             else
                 buffer.Enqueue(obj);
         }
-        public T Read()
+        public T Dequeue()
         {
             return buffer.Dequeue();
         }
