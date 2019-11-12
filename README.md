@@ -16,7 +16,7 @@ class PlayerSnapshot
 }
 ```
 
-The buffers tested by filling them with 2048 items and removing each item from the buffer afterwards.
+The buffers are tested by filling them with 2048 items and removing each item from the buffer afterwards.
 By doing this 20 times we can measure the min max values of all elapsed ticks for each buffer type.
 
 | Buffer type				| Simulations		| Min Ticks		| Max Ticks		| Average Ticks	|
