@@ -16,39 +16,76 @@ namespace RingBuffer
         {
             int itemSize = 2000;
             int bufferCapacity = 128;
+
+            Queue<int> queue = new Queue<int>(bufferCapacity);
             RingBuffer<int> ringBuffer = new RingBuffer<int>(bufferCapacity);
             CircularBuffer<int> circularBuffer = new CircularBuffer<int>(bufferCapacity);
 
             Stopwatch sw = new Stopwatch();
 
-            sw.Start();
-            for (int i = 0; i < itemSize; i++)
+            long accQueue = 0;
+            for (int a = 0; a < 10; a++)
             {
-                circularBuffer.Add(i);
+                if (a == 0) Console.WriteLine("Queue: ----------------------");
+                sw.Restart();
+                for (int i = 0; i < itemSize; i++)
+                {
+                    queue.Enqueue(i);
+                }
+                for (int i = 0; i < bufferCapacity; i++)
+                {
+                    queue.Dequeue();
+                }
+                sw.Stop();
+
+                TimeSpan elapsedTime2 = sw.Elapsed;
+                Console.WriteLine("Queue={0} ticks", elapsedTime2.Ticks);
+                accQueue += elapsedTime2.Ticks;
             }
-            for (int i = 0; i < bufferCapacity; i++)
+            Console.WriteLine("Average Ticks: " + accQueue / 10);
+
+            long accRingQueue = 0;
+            for (int a = 0; a < 10; a++)
             {
-                circularBuffer.Read();
+                if (a == 0) Console.WriteLine("Ring Buffer Queue: ----------------------");
+                sw.Restart();
+                for (int i = 0; i < itemSize; i++)
+                {
+                    circularBuffer.Add(i);
+                }
+                for (int i = 0; i < bufferCapacity; i++)
+                {
+                    circularBuffer.Read();
+                }
+                sw.Stop();
+
+                TimeSpan elapsedTime3 = sw.Elapsed;
+                Console.WriteLine("RingBuffer Queue={0} ticks", elapsedTime3.Ticks);
+                accRingQueue += elapsedTime3.Ticks;
             }
-            sw.Stop();
+            Console.WriteLine("Average Ticks: " + accRingQueue / 10);
 
-            TimeSpan elapsedTime3 = sw.Elapsed;
-            Console.WriteLine("RingBuffer Queue={0} ns", elapsedTime3.TotalMilliseconds * 1000000);
-
-            sw.Restart();
-            for (int i = 0; i < itemSize; i++)
+            long accRing = 0;
+            for (int a = 0; a < 10; a++)
             {
-                ringBuffer.Enqueue(i);
-            }
+                if (a == 0) Console.WriteLine("Ring Buffer: ----------------------");
+                sw.Restart();
+                for (int i = 0; i < itemSize; i++)
+                {
+                    ringBuffer.Enqueue(i);
+                }
 
-            for (int i = 0; i < bufferCapacity; i++)
-            {
-                ringBuffer.Dequeue();
-            }
-            sw.Stop();
+                for (int i = 0; i < bufferCapacity; i++)
+                {
+                    ringBuffer.Dequeue();
+                }
+                sw.Stop();
 
-            TimeSpan elapsedTime2 = sw.Elapsed;
-            Console.WriteLine("RingBuffer={0} ns", elapsedTime2.TotalMilliseconds * 1000000);
+                TimeSpan elapsedTime4 = sw.Elapsed;
+                Console.WriteLine("RingBuffer={0} ticks", elapsedTime4.Ticks);
+                accRing += elapsedTime4.Ticks;
+            }
+            Console.WriteLine("Average Ticks: " + accRing / 10);
 
             Console.WriteLine($"Capacity: {ringBuffer.Capacity} Count: {ringBuffer.Count} IsFull: {ringBuffer.Count == ringBuffer.Capacity} IsEmpty: {ringBuffer.Count == 0}");            
             foreach (int snapshot in ringBuffer)
