@@ -16,75 +16,68 @@ namespace RingBuffer
         {
             int itemSize = 2048;
             int bufferCapacity = 128;
-            int benchmarkDuration = 1;
+            int benchmarkDuration = 10;
 
             Queue<int> queue = new Queue<int>(bufferCapacity);
             RingBuffer<int> ringBuffer = new RingBuffer<int>(bufferCapacity);
             CircularQueue<int> circularQueue = new CircularQueue<int>(bufferCapacity);
 
-            Benchmark.Time("C# Queue", () =>
+            Benchmark.Time("C# Queue", benchmarkDuration, () =>
             {
-                for (int a = 0; a < benchmarkDuration; a++)
+
+                for (int i = 0; i < itemSize; i++)
                 {
-                    for (int i = 0; i < itemSize; i++)
-                    {
-                        queue.Enqueue(i);
-                    }
-                    for (int i = 0; i < bufferCapacity; i++)
-                    {
-                        queue.Dequeue();
-                    }
+                    queue.Enqueue(i);
+                }
+                for (int i = 0; i < bufferCapacity; i++)
+                {
+                    queue.Dequeue();
+                }
+
+            });
+
+            Benchmark.Time("C# Queue Ring Buffer", benchmarkDuration, () =>
+            {
+
+                for (int i = 0; i < itemSize; i++)
+                {
+                    circularQueue.Enqueue(i);
+                }
+                for (int i = 0; i < bufferCapacity; i++)
+                {
+                    circularQueue.Dequeue();
                 }
             });
 
-            Benchmark.Time("C# Queue Ring Buffer", () =>
+            Benchmark.Time("Own Ring Buffer", benchmarkDuration, () =>
             {
-                for (int a = 0; a < benchmarkDuration; a++)
+                for (int i = 0; i < itemSize; i++)
                 {
-                    for (int i = 0; i < itemSize; i++)
-                    {
-                        circularQueue.Enqueue(i);
-                    }
-                    for (int i = 0; i < bufferCapacity; i++)
-                    {
-                        circularQueue.Dequeue();
-                    }
+                    ringBuffer.Enqueue(i);
+                }
+
+                for (int i = 0; i < bufferCapacity; i++)
+                {
+                    ringBuffer.Dequeue();
                 }
             });
 
-            Benchmark.Time("Own Ring Buffer", () =>
-            {
-                for (int a = 0; a < benchmarkDuration; a++)
-                {
-                    for (int i = 0; i < itemSize; i++)
-                    {
-                        ringBuffer.Enqueue(i);
-                    }
-
-                    for (int i = 0; i < bufferCapacity; i++)
-                    {
-                        ringBuffer.Dequeue();
-                    }
-                }
-            });
-
-            Console.WriteLine($"Capacity: {ringBuffer.Capacity} Count: {ringBuffer.Count} IsFull: {ringBuffer.Count == ringBuffer.Capacity} IsEmpty: {ringBuffer.Count == 0}");            
+            Console.WriteLine($"Capacity: {ringBuffer.Capacity} Count: {ringBuffer.Count} IsFull: {ringBuffer.Count == ringBuffer.Capacity} IsEmpty: {ringBuffer.Count == 0}");
             foreach (int snapshot in ringBuffer)
             {
                 Console.WriteLine($"Id: {snapshot}");
             }
-            
+
         }
     }
 
     public class Benchmark
     {
-        public static void Time(string name, Action f)
+        public static void Time(string name, int _benchmarkDuration, Action f)
         {
             f(); // warmup: let the CLR genererate code for generics, get caches hot, etc.
-            GC.GetTotalMemory(true);
             var watch = Stopwatch.StartNew();
-            for (int i = 0; i < 10; i++)
+            for (int i = 0; i < _benchmarkDuration; i++)
             {
                 f();
             }
