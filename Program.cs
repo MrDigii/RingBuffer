@@ -14,78 +14,59 @@ namespace RingBuffer
     {
         static void Main(string[] args)
         {
-            int itemSize = 2000;
+            int itemSize = 2048;
             int bufferCapacity = 128;
+            int benchmarkDuration = 1;
 
             Queue<int> queue = new Queue<int>(bufferCapacity);
             RingBuffer<int> ringBuffer = new RingBuffer<int>(bufferCapacity);
             CircularBuffer<int> circularBuffer = new CircularBuffer<int>(bufferCapacity);
 
-            Stopwatch sw = new Stopwatch();
-
-            long accQueue = 0;
-            for (int a = 0; a < 10; a++)
+            Benchmark.Time("C# Queue", () =>
             {
-                if (a == 0) Console.WriteLine("Queue: ----------------------");
-                sw.Restart();
-                for (int i = 0; i < itemSize; i++)
+                for (int a = 0; a < benchmarkDuration; a++)
                 {
-                    queue.Enqueue(i);
+                    for (int i = 0; i < itemSize; i++)
+                    {
+                        queue.Enqueue(i);
+                    }
+                    for (int i = 0; i < bufferCapacity; i++)
+                    {
+                        queue.Dequeue();
+                    }
                 }
-                for (int i = 0; i < bufferCapacity; i++)
-                {
-                    queue.Dequeue();
-                }
-                sw.Stop();
+            });
 
-                TimeSpan elapsedTime2 = sw.Elapsed;
-                Console.WriteLine("Queue={0} ticks", elapsedTime2.Ticks);
-                accQueue += elapsedTime2.Ticks;
-            }
-            Console.WriteLine("Average Ticks: " + accQueue / 10);
-
-            long accRingQueue = 0;
-            for (int a = 0; a < 10; a++)
+            Benchmark.Time("C# Queue Ring Buffer", () =>
             {
-                if (a == 0) Console.WriteLine("Ring Buffer Queue: ----------------------");
-                sw.Restart();
-                for (int i = 0; i < itemSize; i++)
+                for (int a = 0; a < benchmarkDuration; a++)
                 {
-                    circularBuffer.Add(i);
+                    for (int i = 0; i < itemSize; i++)
+                    {
+                        circularBuffer.Add(i);
+                    }
+                    for (int i = 0; i < bufferCapacity; i++)
+                    {
+                        circularBuffer.Read();
+                    }
                 }
-                for (int i = 0; i < bufferCapacity; i++)
-                {
-                    circularBuffer.Read();
-                }
-                sw.Stop();
+            });
 
-                TimeSpan elapsedTime3 = sw.Elapsed;
-                Console.WriteLine("RingBuffer Queue={0} ticks", elapsedTime3.Ticks);
-                accRingQueue += elapsedTime3.Ticks;
-            }
-            Console.WriteLine("Average Ticks: " + accRingQueue / 10);
-
-            long accRing = 0;
-            for (int a = 0; a < 10; a++)
+            Benchmark.Time("Own Ring Buffer", () =>
             {
-                if (a == 0) Console.WriteLine("Ring Buffer: ----------------------");
-                sw.Restart();
-                for (int i = 0; i < itemSize; i++)
+                for (int a = 0; a < benchmarkDuration; a++)
                 {
-                    ringBuffer.Enqueue(i);
-                }
+                    for (int i = 0; i < itemSize; i++)
+                    {
+                        ringBuffer.Enqueue(i);
+                    }
 
-                for (int i = 0; i < bufferCapacity; i++)
-                {
-                    ringBuffer.Dequeue();
+                    for (int i = 0; i < bufferCapacity; i++)
+                    {
+                        ringBuffer.Dequeue();
+                    }
                 }
-                sw.Stop();
-
-                TimeSpan elapsedTime4 = sw.Elapsed;
-                Console.WriteLine("RingBuffer={0} ticks", elapsedTime4.Ticks);
-                accRing += elapsedTime4.Ticks;
-            }
-            Console.WriteLine("Average Ticks: " + accRing / 10);
+            });
 
             Console.WriteLine($"Capacity: {ringBuffer.Capacity} Count: {ringBuffer.Count} IsFull: {ringBuffer.Count == ringBuffer.Capacity} IsEmpty: {ringBuffer.Count == 0}");            
             foreach (int snapshot in ringBuffer)
@@ -93,6 +74,30 @@ namespace RingBuffer
                 Console.WriteLine($"Id: {snapshot}");
             }
             
+        }
+    }
+
+    public class Benchmark
+    {
+        public static void Time(string name, Action f)
+        {
+            f(); // warmup: let the CLR genererate code for generics, get caches hot, etc.
+            GC.GetTotalMemory(true);
+            var watch = Stopwatch.StartNew();
+            for (int i = 0; i < 10; i++)
+            {
+                f();
+            }
+            watch.Stop();
+            Console.WriteLine("{0}: {1} ticks", name, watch.ElapsedTicks);
+        }
+
+        public static void Memory(string name, Action f)
+        {
+            var initial = GC.GetTotalMemory(true);
+            f();
+            var final = GC.GetTotalMemory(true);
+            Console.WriteLine("{0}: {1} bytes", name, final - initial);
         }
     }
 }

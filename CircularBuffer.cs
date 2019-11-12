@@ -6,33 +6,40 @@ namespace RingBuffer
 {
     public class CircularBuffer<T>
     {
-        Queue<T> _queue;
-        int _size;
+        private Queue<T> buffer;
 
-        public CircularBuffer(int size)
+        public int Capacity { get; private set; }
+        public int Count {
+            get
+            {
+                return buffer.Count;
+            } 
+        }
+
+        public CircularBuffer(int _capacity)
         {
-            _queue = new Queue<T>(size);
-            _size = size;
+            buffer = new Queue<T>(_capacity);
+            Capacity = _capacity;
         }
 
         public void Add(T obj)
         {
-            if (_queue.Count == _size)
+            if (buffer.Count == Capacity)
             {
-                _queue.Dequeue();
-                _queue.Enqueue(obj);
+                buffer.Dequeue();
+                buffer.Enqueue(obj);
             }
             else
-                _queue.Enqueue(obj);
+                buffer.Enqueue(obj);
         }
         public T Read()
         {
-            return _queue.Dequeue();
+            return buffer.Dequeue();
         }
 
         public T Peek()
         {
-            return _queue.Peek();
+            return buffer.Peek();
         }
     }
 
