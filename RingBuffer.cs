@@ -20,33 +20,6 @@ namespace RingBuffer
         #region Properties
         public int Capacity { get; private set; }
         public int Count { get; private set; }
-
-        public T Newest
-        {
-            get
-            {
-                if (Count == 0) throw new ArgumentException("Buffer is empty!");
-                return this[Count - 1];
-            }
-            set
-            {
-                if (Count == 0) throw new ArgumentException("Buffer is empty!");
-                this[Count - 1] = value;
-            }
-        }
-        public T Oldest
-        {
-            get
-            {
-                if (Count == 0) throw new ArgumentException("Buffer is empty!");
-                return this[0];
-            }
-            set
-            {
-                if (Count == 0) throw new ArgumentException("Buffer is empty!");
-                this[0] = value;
-            }
-        }
         #endregion
 
         private T[] buffer;
@@ -91,15 +64,6 @@ namespace RingBuffer
                 int relativeIndex = (tail - Count + _index) % Capacity; // attention % != Mod see: https://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
                 if (relativeIndex < 0) relativeIndex = relativeIndex + Capacity;
                 return buffer[relativeIndex];
-            }
-            set
-            {
-                if (_index < 0 || _index >= Count) throw new IndexOutOfRangeException();
-                // get relative index
-                int relativeIndex = (tail - Count + _index) % Capacity; // attention % != Mod see: https://stackoverflow.com/questions/1082917/mod-of-negative-number-is-melting-my-brain
-                if (relativeIndex < 0) relativeIndex = relativeIndex + Capacity;
-
-                buffer[relativeIndex] = value;
             }
         }
 

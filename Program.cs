@@ -77,13 +77,8 @@ namespace RingBuffer
                     {
                         Id = i,
                         Name = "Player_" + i,
-                    });                    
+                    });
                 }
-                
-                /*
-                Console.WriteLine("Newest: " + ringBuffer.Newest.Id);
-                Console.WriteLine("Oldest: " + ringBuffer.Oldest.Id);
-                */
 
                 for (int i = 0; i < bufferCapacity; i++)
                 {
