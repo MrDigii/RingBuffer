@@ -45,7 +45,7 @@ namespace RingBuffer
             if (Count == 0) throw new ArgumentException("Buffer is empty!");
 
             // get head of buffer
-            int head = (tail - (Count - 1)) % Capacity;
+            int head = (tail - Count) % Capacity;
             if (head < 0) head += Capacity;
 
             // decrement count to length without deleted item
