@@ -24,6 +24,10 @@ namespace RingBuffer
         public static long minRingTicks = 0;
         public static long accRingTicks = 0;
 
+        public static long maxTempTicks = 0;
+        public static long minTempTicks = 0;
+        public static long accTempTicks = 0;
+
         static void Main(string[] args)
         {
             int itemSize = 2048;
@@ -33,6 +37,7 @@ namespace RingBuffer
             Queue<PlayerSnapshot> queue = new Queue<PlayerSnapshot>(bufferCapacity);
             RingBuffer<PlayerSnapshot> ringBuffer = new RingBuffer<PlayerSnapshot>(bufferCapacity);
             CircularQueue<PlayerSnapshot> circularQueue = new CircularQueue<PlayerSnapshot>(bufferCapacity);
+            TempBuffer<PlayerSnapshot> tempBuffer = new TempBuffer<PlayerSnapshot>(bufferCapacity);
 
             Benchmark.Time("C# Queue", benchmarkDuration, () =>
             {
@@ -45,10 +50,13 @@ namespace RingBuffer
                         Name = "Player_" + i,
                     });
                 }
+
+                /*
                 for (int i = 0; i < bufferCapacity; i++)
                 {
                     queue.Dequeue();
                 }
+                */
 
             }, OnStopwatchQueue);
 
@@ -63,10 +71,13 @@ namespace RingBuffer
                         Name = "Player_" + i,
                     });
                 }
+
+                /*
                 for (int i = 0; i < bufferCapacity; i++)
                 {
                     circularQueue.Dequeue();
                 }
+                */
             }, OnStopwatchQueueRing);
 
             Benchmark.Time("Own Ring Buffer", benchmarkDuration, () =>
@@ -80,15 +91,42 @@ namespace RingBuffer
                     });
                 }
 
+                int id = 0;
+                for (int i = 0; i < ringBuffer.Count; i++)
+                {
+                    id = ringBuffer[i].Id;
+                }
+
+                /*
                 for (int i = 0; i < bufferCapacity; i++)
                 {
                     ringBuffer.Dequeue();
                 }
+                */
             }, OnStopwatchRingBuffer);
+
+            Benchmark.Time("Own Temp Buffer", benchmarkDuration, () =>
+            {
+                for (int i = 0; i < itemSize; i++)
+                {
+                    tempBuffer.Add(new PlayerSnapshot()
+                    {
+                        Id = i,
+                        Name = "Player_" + i,
+                    });
+                }
+
+                int id = 0;
+                for (int i = 0; i < tempBuffer.Tail; i++)
+                {
+                    id = ringBuffer[i].Id;
+                }
+            }, OnStopwatchTempBuffer);
 
             Console.WriteLine("Queue Min: {0} Max: {1} Avg: {2} ticks", minQueueTicks, maxQueueTicks, accQueueTicks / benchmarkDuration);
             Console.WriteLine("Queue Ring Min: {0}  Max: {1} Avg: {2} ticks", minQueueRingTicks, maxQueueRingTicks, accQueueRingTicks / benchmarkDuration);
             Console.WriteLine("Ring Buffer Min: {0} Max: {1} Avg: {2} ticks", minRingTicks, maxRingTicks, accRingTicks / benchmarkDuration);
+            Console.WriteLine("Temp Buffer Min: {0} Max: {1} Avg: {2} ticks", minTempTicks, maxTempTicks, accTempTicks / benchmarkDuration);
 
             Console.WriteLine($"Capacity: {ringBuffer.Capacity} Count: {ringBuffer.Count} IsFull: {ringBuffer.Count == ringBuffer.Capacity} IsEmpty: {ringBuffer.Count == 0}");
             foreach (PlayerSnapshot snapshot in ringBuffer)
@@ -117,6 +155,13 @@ namespace RingBuffer
             if (_elapsedTicks > maxRingTicks) maxRingTicks = _elapsedTicks;
             if (_elapsedTicks < minRingTicks || minRingTicks == 0) minRingTicks = _elapsedTicks;
             accRingTicks += _elapsedTicks;
+        }
+
+        public static void OnStopwatchTempBuffer(long _elapsedTicks)
+        {
+            if (_elapsedTicks > maxTempTicks) maxTempTicks = _elapsedTicks;
+            if (_elapsedTicks < minTempTicks || minTempTicks == 0) minTempTicks = _elapsedTicks;
+            accTempTicks += _elapsedTicks;
         }
     }
 
